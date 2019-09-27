@@ -52,6 +52,8 @@ public class ImageResizer {
                 return null;
             }
         }
+
+        return null;
     }
 
     /**
