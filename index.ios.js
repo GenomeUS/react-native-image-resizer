@@ -1,7 +1,7 @@
 import { NativeModules } from 'react-native';
 
 export default {
-  createResizedImage: (path, width, height, format, quality, rotation = 0, outputPath) => {
+  createResizedImage: (path, width, height, format, quality, rotation = 0) => {
     if (format !== 'JPEG' && format !== 'PNG') {
       throw new Error('Only JPEG and PNG format are supported by createResizedImage');
     }
@@ -14,7 +14,7 @@ export default {
         format,
         quality,
         rotation,
-        outputPath,
+        null,
         (err, response) => {
           if (err) {
             return reject(err);
