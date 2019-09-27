@@ -31,15 +31,26 @@ public class ImageResizer {
     /**
      * Resize the specified bitmap, keeping its aspect ratio.
      */
-    private static Bitmap resizeImage(Bitmap image, int width, int height) {
+    private static Bitmap resizeImage(Bitmap image, int maxWidth, int maxHeight) {
         if (image == null) {
             return null; // Can't load the image from the given path.
         }
 
-        try {
-            return Bitmap.createScaledBitmap(image, width, height, true);
-        } catch (OutOfMemoryError e) {
-            return null;
+        if (maxHeight > 0 && maxWidth > 0) {
+            float width = image.getWidth();
+            float height = image.getHeight();
+
+            float ratio = Math.min((float)maxWidth / width, (float)maxHeight / height);
+
+            int finalWidth = (int) (width * ratio);
+            int finalHeight = (int) (height * ratio);
+
+
+            try {
+                return Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true);
+            } catch (OutOfMemoryError e) {
+                return null;
+            }
         }
     }
 
