@@ -154,7 +154,8 @@ public class ImageResizer {
     /**
      * Loads the bitmap resource from the file specified in imagePath.
      */
-    private static Bitmap loadBitmapFromFile(Context context, Uri imageUri, int newWidth, int newHeight) throws IOException  {
+    private static Bitmap loadBitmapFromFile(Context context, Uri imageUri, int newWidth,
+                                             int newHeight) throws IOException  {
         // Decode the image bounds to find the size of the source image.
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -169,6 +170,32 @@ public class ImageResizer {
     }
 
     /**
+     * Loads the bitmap resource from a base64 encoded jpg or png.
+     * Format is as such:
+     * png: 'data:image/png;base64,iVBORw0KGgoAA...'
+     * jpg: 'data:image/jpeg;base64,/9j/4AAQSkZJ...'
+     */
+    private static Bitmap loadBitmapFromBase64(Uri imageUri) {
+        Bitmap sourceImage = null;
+        String imagePath = imageUri.getSchemeSpecificPart();
+        int commaLocation = imagePath.indexOf(',');
+        if (commaLocation != -1) {
+            final String mimeType = imagePath.substring(0, commaLocation).replace('\\','/').toLowerCase();
+            final boolean isJpeg = mimeType.startsWith(IMAGE_JPEG);
+            final boolean isPng = !isJpeg && mimeType.startsWith(IMAGE_PNG);
+
+            if (isJpeg || isPng) {
+                // base64 image. Convert to a bitmap.
+                final String encodedImage = imagePath.substring(commaLocation + 1);
+                final byte[] decodedString = Base64.decode(encodedImage, Base64.DEFAULT);
+                sourceImage = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+            }
+        }
+
+        return sourceImage;
+    }
+
+    /**
      * Create a resized version of the given image.
      */
     public static File createResizedImage(Context context, Uri imageUri, int newWidth,
@@ -178,6 +205,8 @@ public class ImageResizer {
         String imageUriScheme = imageUri.getScheme();
         if (imageUriScheme == null || imageUriScheme.equalsIgnoreCase(SCHEME_FILE) || imageUriScheme.equalsIgnoreCase(SCHEME_CONTENT)) {
             sourceImage = ImageResizer.loadBitmapFromFile(context, imageUri, newWidth, newHeight);
+        } else if (imageUriScheme.equalsIgnoreCase(SCHEME_DATA)) {
+            sourceImage = ImageResizer.loadBitmapFromBase64(imageUri);
         }
 
         if (sourceImage == null) {
@@ -186,18 +215,24 @@ public class ImageResizer {
 
         // Scale it first so there are fewer pixels to transform in the rotation
         Bitmap scaledImage = ImageResizer.resizeImage(sourceImage, newWidth, newHeight);
+        if (sourceImage != scaledImage) {
+            sourceImage.recycle();
+        }
 
         // Rotate if necessary
         Bitmap rotatedImage = ImageResizer.rotateImage(scaledImage, rotation);
 
+        if (scaledImage != rotatedImage) {
+            scaledImage.recycle();
+        }
+
         // Save the resulting image
         File path = context.getCacheDir();
 
-        File newFile = ImageResizer.saveImage(rotatedImage, path, Long.toString(new Date().getTime()), compressFormat, quality);
+        File newFile = ImageResizer.saveImage(rotatedImage, path,
+                Long.toString(new Date().getTime()), compressFormat, quality);
 
         // Clean up remaining image
-        sourceImage.recycle();
-        scaledImage.recycle();
         rotatedImage.recycle();
 
         return newFile;
