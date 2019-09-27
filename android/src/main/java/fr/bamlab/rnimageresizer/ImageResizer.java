@@ -160,7 +160,7 @@ public class ImageResizer {
      */
     public static File createResizedImage(Context context, Uri imageUri, int newWidth,
                                             int newHeight, Bitmap.CompressFormat compressFormat,
-                                            int quality, int rotation, String outputPath) throws IOException  {
+                                            int quality, int rotation) throws IOException  {
         Bitmap sourceImage = null;
         String imageUriScheme = imageUri.getScheme();
         if (imageUriScheme == null || imageUriScheme.equalsIgnoreCase(SCHEME_FILE) || imageUriScheme.equalsIgnoreCase(SCHEME_CONTENT)) {

@@ -35,7 +35,7 @@ class ImageResizerModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void createResizedImage(String imagePath, int newWidth, int newHeight, String compressFormat, int quality, int rotation, String outputPath, final Callback successCb, final Callback failureCb) {
+    public void createResizedImage(String imagePath, int newWidth, int newHeight, String compressFormat, int quality, int rotation, final Callback successCb, final Callback failureCb) {
         try {
             createResizedImageWithExceptions(imagePath, newWidth, newHeight, compressFormat, quality,
                     rotation, successCb, failureCb);
